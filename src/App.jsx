@@ -1,7 +1,9 @@
+import Category from './components/category'
 import Pages from './pages/pages'
 
-function App() {
+const App = () => {
   return <>
+    <Category />
     <Pages />
   </>
 }
