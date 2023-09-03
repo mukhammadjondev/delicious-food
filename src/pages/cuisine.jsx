@@ -2,18 +2,17 @@ import { useState, useEffect, useCallback } from "react"
 import { Link, useParams } from "react-router-dom"
 import { styled } from "styled-components"
 import { motion } from "framer-motion"
+import FoodService from "../service/food"
 
 const Cuisine = () => {
   const [cuisine, setCuisine] = useState([])
   const {type} = useParams()
 
-  const getCuisine = useCallback(async name => {
-    const api = await fetch(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${import.meta.env.VITE_API_KEY}&cuisine=${name}`)
-    const data = await api.json()
-    setCuisine(data.results)
-  }, [setCuisine])
-
   useEffect(() => {
+    const getCuisine = async name => {
+      const response = await FoodService.getCuisine(name)
+      setCuisine(response.results)
+    }
     getCuisine(type)
   }, [type])
 

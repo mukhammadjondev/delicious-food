@@ -1,18 +1,17 @@
 import { useCallback, useEffect, useState } from "react"
 import { Link, useParams } from "react-router-dom"
 import { styled } from "styled-components"
+import FoodService from "../service/food"
 
 const Searched = () => {
   const [searchedRecipes, setSearchedRecipes] = useState([])
   const {search} = useParams()
 
-  const getSearched = useCallback(async name => {
-    const api = await fetch(`https://api.spoonacular.com/recipes/complexSearch?apiKey=${import.meta.env.VITE_API_KEY}&query=${name}`)
-    const data = await api.json()
-    setSearchedRecipes(data.results)
-  }, [setSearchedRecipes])
-
   useEffect(() => {
+    const getSearched = async name => {
+      const response = await FoodService.getSearched(name)
+      setSearchedRecipes(response.results)
+    }
     getSearched(search)
   }, [search])
 

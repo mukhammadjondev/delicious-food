@@ -1,27 +1,37 @@
 import { useEffect, useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
 import { useParams } from "react-router-dom"
 import { styled } from "styled-components"
+import FoodService from "../service/food"
+import { getTopFoodsFailure, getTopFoodsStart, getFoodDetailSuccess } from "../slice/food"
+import Loader from '../components/loader'
 
 const Recipe = () => {
-  const [details, setDetails] = useState({})
+  const {foodDetail, isLoading} = useSelector(state => state.food)
   const [activeTab, setActiveTab] = useState('instructions')
   const {id} = useParams()
-
-  const fetchDetails = async () => {
-    const data = await fetch(`https://api.spoonacular.com/recipes/${id}/information?apiKey=${import.meta.env.VITE_API_KEY}`)
-    const detailData = await data.json()
-    setDetails(detailData)
-  }
+  const dispatch = useDispatch()
 
   useEffect(() => {
+    const fetchDetails = async () => {
+      dispatch(getTopFoodsStart())
+      try {
+        const response = await FoodService.getFoodDeatil(id)
+        dispatch(getFoodDetailSuccess(response))
+      } catch (error) {
+        dispatch(getTopFoodsFailure(error))
+      }
+    }
     fetchDetails()
   }, [id])
 
-  return (
+  return isLoading ? (
+    <Loader />
+  ) : (
     <DetailWrapper>
       <div>
-        <h2>{details.title}</h2>
-        <img src={details.image} alt={details.title} />
+        <h2>{foodDetail.title}</h2>
+        <img src={foodDetail.image} alt={foodDetail.title} />
       </div>
       <Info>
         <Button className={activeTab === 'instructions' ? 'active' : ''} onClick={() => setActiveTab('instructions')}>
@@ -33,13 +43,13 @@ const Recipe = () => {
 
         {activeTab === 'instructions' && (
           <div>
-            <h4 dangerouslySetInnerHTML={{__html: details.summary}}></h4>
-            <h5 dangerouslySetInnerHTML={{__html: details.instructions}}></h5>
+            <h4 dangerouslySetInnerHTML={{__html: foodDetail.summary}}></h4>
+            <h4 dangerouslySetInnerHTML={{__html: foodDetail.instructions}}></h4>
           </div>
         )}
         {activeTab === 'ingredients' && (
           <ul>
-            {details.extendedIngredients.map(ingredient => (
+            {foodDetail.extendedIngredients.map(ingredient => (
               <li key={ingredient.id}>{ingredient.original}</li>
             ))}
           </ul>
@@ -58,8 +68,8 @@ const DetailWrapper = styled.div`
     background: linear-gradient(35deg, #494949, #313131);
     color: white;
   }
-  h2 {
-    margin-bottom: 2rem;
+  h4 {
+    margin-top: 1 rem;
   }
   ul {
     margin-top: 2rem;

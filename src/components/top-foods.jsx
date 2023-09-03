@@ -1,34 +1,48 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { styled } from "styled-components"
 import { Splide, SplideSlide } from "@splidejs/react-splide"
 import '@splidejs/splide/dist/css/splide.min.css'
 import { Link } from "react-router-dom"
+import FoodService from "../service/food"
+import { useDispatch, useSelector } from "react-redux"
+import { getPopularSuccess, getTopFoodsFailure, getTopFoodsStart, getVeggieSuccess } from "../slice/food"
+import Loader from "./loader"
 
-const Popular = () => {
-  const [popular, setPopular] = useState([])
-
-  const getPopular = async () => {
-    const check = localStorage.getItem('popular')
-
-    if(check) {
-      setPopular(JSON.parse(check))
-    } else {
-      const api = await fetch(`https://api.spoonacular.com/recipes/random?apiKey=${import.meta.env.VITE_API_KEY}&number=9`)
-      const data = await api.json()
-      localStorage.setItem('popular', JSON.stringify(data.recipes))
-      setPopular(data)
-    }
+const TopFoods = ({type}) => {
+  const {popular, veggie, isLoading} = useSelector(state => state.food)
+  const dispatch = useDispatch()
+  let topFoods
+  if(type === 'popular') {
+    topFoods = popular
+  } else if(type === 'veggie') {
+    topFoods = veggie
   }
 
   useEffect(() => {
+    const getPopular = async () => {
+      dispatch(getTopFoodsStart())
+      try {
+        if(type === 'popular') {
+          const response = await FoodService.getPopular()
+          dispatch(getPopularSuccess(response.recipes))
+        } else if(type === 'veggie') {
+          const response = await FoodService.getVeggie()
+          dispatch(getVeggieSuccess(response.recipes))
+        }
+      } catch (error) {
+        dispatch(getTopFoodsFailure(error))
+      }
+    }
     getPopular()
   }, [])
 
-  return <>
+  return isLoading ? (
+    <Loader />
+  ) : (
     <Wrapper>
-      <h3>Popular Picks</h3>
-      <Splide options={{perPage: 3, arrows: false, pagination: false, drag: 'free', gap: '5rem'}}>
-      {popular.map(recipe => (
+      <h3>{type === 'popular' ? 'Popular Picks' : 'Our Vegetarian Picks'}</h3>
+      <Splide options={{perPage: type === 'popular' ? 3 : 2, arrows: false, pagination: false, drag: 'free', gap: '5rem'}}>
+      {topFoods.map(recipe => (
         <SplideSlide key={recipe.id}>
           <Card>
             <Link to={`/recipe/${recipe.id}`}>
@@ -41,7 +55,7 @@ const Popular = () => {
       ))}
       </Splide>
     </Wrapper>
-  </>
+  )
 }
 
 const Wrapper = styled.div`
@@ -88,4 +102,4 @@ const Gradient = styled.div`
   background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.5))
 `
 
-export default Popular
+export default TopFoods
