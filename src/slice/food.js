@@ -4,6 +4,7 @@ const initialState = {
   isLoading: false,
   popular: [],
   veggie: [],
+  foodCards: [],
   foodDetail: {},
   error: null
 }
@@ -23,6 +24,10 @@ export const foodSlice = createSlice({
       state.isLoading = false
       state.veggie = action.payload
     },
+    getFoodCardSuccess: (state, action) => {
+      state.isLoading = false
+      state.foodCards = action.payload
+    },
     getFoodDetailSuccess: (state, action) => {
       state.isLoading = false
       state.foodDetail = action.payload
@@ -34,5 +39,5 @@ export const foodSlice = createSlice({
   }
 })
 
-export const {getTopFoodsStart, getPopularSuccess, getVeggieSuccess, getTopFoodsFailure, getFoodDetailSuccess} = foodSlice.actions
+export const {getTopFoodsStart, getPopularSuccess, getVeggieSuccess, getTopFoodsFailure, getFoodDetailSuccess, getFoodCardSuccess} = foodSlice.actions
 export default foodSlice.reducer

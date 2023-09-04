@@ -69,7 +69,7 @@ const DetailWrapper = styled.div`
     color: white;
   }
   h4 {
-    margin-top: 1 rem;
+    margin-top: 1rem;
   }
   ul {
     margin-top: 2rem;
